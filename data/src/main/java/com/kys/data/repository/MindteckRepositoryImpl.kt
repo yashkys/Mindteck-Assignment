@@ -7,11 +7,13 @@ import com.kys.domain.model.DataResponseDomainModel
 import com.kys.domain.network.NetworkService
 import com.kys.domain.network.ResultWrapper
 import com.kys.domain.repository.MindteckRepository
+import kotlinx.coroutines.delay
 
 class MindteckRepositoryImpl(
     private val networkService: NetworkService
 ): MindteckRepository {
     override suspend fun getDynamicInformation(): ResultWrapper<DataResponseDomainModel> {
+        delay(500L)
         // return networkService.getDynamicInformation()
         val images = listOf<ImageDataModel>(
             ImageDataModel(1,"https://next-images.123rf.com/index/_next/image/?url=https://assets-cdn.123rf.com/index/static/assets/top-section-bg.jpeg&w=3840&q=75"),

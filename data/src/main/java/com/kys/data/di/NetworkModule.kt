@@ -1,6 +1,8 @@
 package com.kys.data.di
 
 import android.util.Log
+import com.kys.data.network.NetworkServiceImpl
+import com.kys.domain.network.NetworkService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
