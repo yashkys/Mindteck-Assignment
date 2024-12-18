@@ -1,10 +1,9 @@
 package com.kys.mindteck.ui.features.home
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,27 +19,30 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -48,16 +50,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
 import com.kys.mindteck.model.UiImage
 import com.kys.mindteck.model.UiItem
 import com.kys.mindteck.model.UiResponse
@@ -68,6 +67,7 @@ import com.kys.mindteck.ui.theme.GreenTint
 import com.kys.mindteck.ui.theme.GreyLight
 import com.kys.mindteck.ui.theme.GreyMedium
 import com.kys.mindteck.ui.theme.PoppinsFontFamily
+import com.kys.mindteck.ui.theme.WhiteFill
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -75,7 +75,6 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeScreenViewModel = koinViewModel<HomeScreenViewModel>()
 ) {
-    val context = LocalContext.current
     val uiState = viewModel.uiState.collectAsState()
     val loading = remember {
         mutableStateOf(false)
@@ -84,7 +83,7 @@ fun HomeScreen(
         mutableStateOf<String?>(null)
     }
     val response = remember {
-        mutableStateOf<UiResponse>(UiResponse(emptyList(), emptyList()))
+        mutableStateOf(UiResponse(emptyList(), emptyList()))
     }
     Scaffold(
         modifier = Modifier
@@ -147,22 +146,51 @@ fun HomeScreen(
 @Composable
 fun HomeScreenContent(data: UiResponse, paddingValues: PaddingValues) {
     var searchQuery by remember { mutableStateOf("") }
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues = paddingValues)
-    ) {
-        ImagesView(
-            images = data.images,
-            onClick = {}
-        )
-        CustomSearchBar(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-        )
-        ItemsView(
-            data = data.items,
-            onClick = {}
+    ){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.TopCenter)
+        ) {
+            ImagesView(
+                images = data.images,
+                onClick = {}
+            )
+            Spacer(Modifier.height(16.dp))
+            CustomSearchBar(
+                query = searchQuery,
+                onSearchTextChanged = { searchQuery = it },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            ItemsView(
+                data = data.items,
+                onClick = {}
+            )
+        }
+        FloatingActionButton(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(64.dp)
+                .align(Alignment.BottomEnd),
+            shape = CircleShape,
+            contentColor = WhiteFill,
+            containerColor = Blue,
+            onClick = {},
+            elevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 8.dp,
+                pressedElevation = 12.dp
+            ),
+            content = {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = null,
+                )
+            }
         )
     }
 
@@ -170,7 +198,7 @@ fun HomeScreenContent(data: UiResponse, paddingValues: PaddingValues) {
 
 @Composable
 fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
-    val listState = rememberLazyListState()
+    val interactionSource = remember { MutableInteractionSource() }
     val pagerState = rememberPagerState(pageCount = { images.size })
     val currentImageIndex = remember { mutableIntStateOf(pagerState.currentPage) }
     LaunchedEffect(pagerState) {
@@ -196,10 +224,14 @@ fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
                 onLoading = { Log.i("Image", "Loading image... $page") },
                 onError = { Log.i("Image", "Error loading image $page: ${it.result.throwable}") },
                 modifier = Modifier
-                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    //.padding(vertical = 8.dp, horizontal = 16.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .aspectRatio(1.77f)
-                    .clickable { onClick() }
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = onClick
+                    )
             )
         }
         Row(
@@ -213,7 +245,7 @@ fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
                         .size(8.dp)
                         .clip(RoundedCornerShape(50))
                         .background(
-                            if (index == currentImageIndex.value) Blue else GreyMedium.copy(
+                            if (index == currentImageIndex.intValue) Blue else GreyMedium.copy(
                                 alpha = 0.5f
                             )
                         )
@@ -224,15 +256,57 @@ fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
 }
 
 @Composable
-fun CustomSearchBar(query: String, onQueryChange: (String) -> Unit) {
+fun CustomSearchBar(
+    query: String,
+    onSearchTextChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val hintColor = GreyMedium //Color.DarkGray
+    val backgroundColor = GreyLight //Color.LightGray
 
+    BasicTextField(
+        value = query,
+        onValueChange = onSearchTextChanged,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(backgroundColor, RoundedCornerShape(16.dp))
+            .padding(8.dp),
+        textStyle = TextStyle(
+            color = Color.Black,
+            fontFamily = PoppinsFontFamily,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp
+        ),
+        decorationBox = { innerTextField ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Search",
+                    tint = hintColor
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                if (query.isEmpty()) {
+                    Text(
+                        text = "Search",
+                        color = hintColor
+                    )
+                }
+                innerTextField()
+            }
+        }
+    )
 }
 
 @Composable
 fun ItemsView(data: List<UiItem>, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
     LazyColumn(
-        modifier = Modifier.fillMaxWidth()
-            .padding(16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         items(data) { item ->
             Card(
@@ -240,7 +314,11 @@ fun ItemsView(data: List<UiItem>, onClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
-                    .clickable { onClick() },
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = onClick,
+                    ),
                 elevation = CardDefaults.cardElevation(2.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(GreenTint.value)) // Light green background
             ) {
