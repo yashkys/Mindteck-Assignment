@@ -20,5 +20,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Mindteck"
-include(":app")
+include(":presentation")
  
