@@ -13,7 +13,6 @@ class MindteckRepositoryImpl(
     private val networkService: NetworkService
 ): MindteckRepository {
     override suspend fun getDynamicInformation(): ResultWrapper<DataResponseDomainModel> {
-        delay(500L)
         // return networkService.getDynamicInformation()
         val images = listOf<ImageDataModel>(
             ImageDataModel(1,"https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0"),
