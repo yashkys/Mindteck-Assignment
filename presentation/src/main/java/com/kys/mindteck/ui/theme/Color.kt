@@ -7,6 +7,7 @@ val Blue = Color(0xFF269af7)
 val WhiteFill = Color(0xFFdcffff)
 val GreyLight = Color(0xFFe5ebeb)
 val GreyMedium = Color(0xFF9a9e9f)
+val AppBackground = Color(0xFFf5fbf9)
 
 
 
