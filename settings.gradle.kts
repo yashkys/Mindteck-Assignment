@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Mindteck"
 include(":presentation")
 include(":data")
+include(":domain")
