@@ -4,7 +4,7 @@ import com.kys.domain.model.DataResponseDomainModel
 import java.lang.Exception
 
 interface NetworkService {
-    suspend fun getDynamicInformation(): ResultWrapper<List<DataResponseDomainModel>>
+    suspend fun getDynamicInformation(): ResultWrapper<DataResponseDomainModel>
 
 }
 sealed class ResultWrapper<out T> {

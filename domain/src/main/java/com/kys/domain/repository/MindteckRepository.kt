@@ -4,5 +4,5 @@ import com.kys.domain.model.DataResponseDomainModel
 import com.kys.domain.network.ResultWrapper
 
 interface MindteckRepository {
-    suspend fun getDynamicInformation(): ResultWrapper<List<DataResponseDomainModel>>
+    suspend fun getDynamicInformation(): ResultWrapper<DataResponseDomainModel>
 }
