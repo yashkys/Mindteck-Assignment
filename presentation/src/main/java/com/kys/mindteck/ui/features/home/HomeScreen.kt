@@ -3,6 +3,7 @@ package com.kys.mindteck.ui.features.home
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +18,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -44,19 +50,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
 import com.kys.mindteck.model.UiImage
 import com.kys.mindteck.model.UiItem
 import com.kys.mindteck.model.UiResponse
 import com.kys.mindteck.ui.features.components.ShufflingDotsLoader
 import com.kys.mindteck.ui.theme.AppTypography
 import com.kys.mindteck.ui.theme.Blue
+import com.kys.mindteck.ui.theme.GreenTint
 import com.kys.mindteck.ui.theme.GreyLight
 import com.kys.mindteck.ui.theme.GreyMedium
+import com.kys.mindteck.ui.theme.PoppinsFontFamily
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -150,7 +161,7 @@ fun HomeScreenContent(data: UiResponse, paddingValues: PaddingValues) {
             onQueryChange = { searchQuery = it },
         )
         ItemsView(
-            images = data.items,
+            data = data.items,
             onClick = {}
         )
     }
@@ -169,7 +180,7 @@ fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         HorizontalPager(
             state = pagerState,
@@ -188,6 +199,7 @@ fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
                     .padding(vertical = 8.dp, horizontal = 16.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .aspectRatio(1.77f)
+                    .clickable { onClick() }
             )
         }
         Row(
@@ -200,7 +212,11 @@ fun ImagesView(images: List<UiImage>, onClick: () -> Unit) {
                         .padding(4.dp)
                         .size(8.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(if (index == currentImageIndex.value) Blue else GreyMedium.copy(alpha = 0.5f))
+                        .background(
+                            if (index == currentImageIndex.value) Blue else GreyMedium.copy(
+                                alpha = 0.5f
+                            )
+                        )
                 )
             }
         }
@@ -213,6 +229,58 @@ fun CustomSearchBar(query: String, onQueryChange: (String) -> Unit) {
 }
 
 @Composable
-fun ItemsView(images: List<UiItem>, onClick: () -> Unit) {
+fun ItemsView(data: List<UiItem>, onClick: () -> Unit) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        items(data) { item ->
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+                    .clickable { onClick() },
+                elevation = CardDefaults.cardElevation(2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(GreenTint.value)) // Light green background
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Image on the left
+                    AsyncImage(
+                        model = item.url,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .size(64.dp)
+                    )
 
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Title and Subtitle
+                    Column {
+                        Text(
+                            text = item.title,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = PoppinsFontFamily,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = item.subtitle,
+                            fontSize = 14.sp,
+                            fontFamily = PoppinsFontFamily,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+            }
+
+        }
+    }
 }
