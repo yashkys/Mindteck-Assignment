@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("plugin.serialization") version "1.8.0"
+    id("kotlin-parcelize")
 }
 
 android {
@@ -50,6 +52,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":data"))
+    implementation(project(":domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -66,4 +70,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+
+    implementation(libs.koin.android)
+    implementation(libs.koin.android.compose)
+    implementation(libs.compose.navigation)
+    implementation(libs.coil.compose)
+    implementation(libs.kotlinx.serialization.json)
 }
